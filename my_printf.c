@@ -1,38 +1,68 @@
+#include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
 
-#define BUFFER_SIZE 256
+int my_putchar(char c) {
+    return write(1, &c, 1);
+}
 
-void my_sprintf(char* buffer, const char* format, ...) {
+int my_putstr(char *str) {
+    int len = 0;
+    while (str[len] != '\0') {
+        my_putchar(str[len]);
+        len++;
+    }
+    return len;
+}
+
+int my_putnbr(int n) {
+    if (n < 0) {
+        my_putchar('-');
+        n = -n;
+    }
+    if (n >= 10) {
+        my_putnbr(n / 10);
+    }
+    my_putchar(n % 10 + '0');
+    return 0;
+}
+
+int my_printf(char *restrict format, ...) {
     va_list args;
     va_start(args, format);
 
-    while (*format && (buffer - buffer) < BUFFER_SIZE - 1) {
+    int count = 0;
+    char *str_arg;
+    int int_arg;
+
+    while (*format != '\0') {
         if (*format == '%') {
             format++;
 
             switch (*format) {
-                case 'd':
-                    buffer += sprintf(buffer, "%d", va_arg(args, int));
-                    break;
-                case 'f':
-                    buffer += sprintf(buffer, "%f", va_arg(args, double));
+                case 'c':
+                    int_arg = va_arg(args, int);
+                    count += my_putchar((char)int_arg);
                     break;
                 case 's':
-                    buffer += sprintf(buffer, "%s", va_arg(args, char*));
+                    str_arg = va_arg(args, char *);
+                    count += my_putstr(str_arg);
+                    break;
+                case 'd':
+                    int_arg = va_arg(args, int);
+                    count += my_putnbr(int_arg);
                     break;
                 default:
-                    *buffer++ = '%';
-                    *buffer++ = *format;
                     break;
             }
         } else {
-            *buffer++ = *format;
+            count += my_putchar(*format);
         }
 
         format++;
     }
 
-    *buffer = '\0';  // Null-terminate the string
     va_end(args);
+
+    return count;
 }
