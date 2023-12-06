@@ -1,35 +1,38 @@
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
-void my_printf(const char* format, ...) {
+#define BUFFER_SIZE 256
+
+void my_sprintf(char* buffer, const char* format, ...) {
     va_list args;
     va_start(args, format);
 
-    while (*format) {
+    while (*format && (buffer - buffer) < BUFFER_SIZE - 1) {
         if (*format == '%') {
             format++;
 
             switch (*format) {
                 case 'd':
-                    printf("%d", va_arg(args, int));
+                    buffer += sprintf(buffer, "%d", va_arg(args, int));
                     break;
                 case 'f':
-                    printf("%f", va_arg(args, double));
+                    buffer += sprintf(buffer, "%f", va_arg(args, double));
                     break;
                 case 's':
-                    printf("%s", va_arg(args, char*));
+                    buffer += sprintf(buffer, "%s", va_arg(args, char*));
                     break;
                 default:
-                    putchar('%');
-                    putchar(*format);
+                    *buffer++ = '%';
+                    *buffer++ = *format;
                     break;
             }
         } else {
-            putchar(*format);
+            *buffer++ = *format;
         }
 
         format++;
     }
 
+    *buffer = '\0';  // Null-terminate the string
     va_end(args);
 }
